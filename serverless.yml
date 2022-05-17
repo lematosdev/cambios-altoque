@@ -14,10 +14,8 @@ provider:
   name: aws
   runtime: nodejs14.x
   profile: personal
-  environment:
-    SENDGRID_API_KEY: ${env:SENDGRID_API_KEY}
   layers:
-      - arn:aws:lambda:us-east-1:672026565936:layer:canvas-nodejs:4
+    - ${env:CANVAS_LAYER}
   iam:
     role:
       statements:
@@ -27,11 +25,22 @@ provider:
           Resource:
             {
               'Fn::Join':
-                ['', ['arn:aws:s3:::cambios-altoque', '/*']]
+                [
+                  '',
+                  [
+                    'arn:aws:s3:::${env:S3_BUCKET_NAME}',
+                    '/*'
+                  ]
+                ]
             }
         - Effect: Allow
           Action:
             - lambda:InvokeFunction
+          Resource:
+            - '*'
+        - Effect: Allow
+          Action:
+            - 'ses:*'
           Resource:
             - '*'
 

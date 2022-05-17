@@ -62,7 +62,7 @@ const fetchP2P: APIGatewayProxyHandler = async () => {
     if (priceCLP && priceVES) {
       const rate = (
         (parseFloat(priceVES) / parseFloat(priceCLP)) *
-        0.98
+        0.96
       ).toFixed(5);
 
       console.log(`La tasa del dia es: ${rate}`);

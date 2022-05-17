@@ -1,17 +1,21 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { Lambda } from 'aws-sdk';
-import * as sgMail from '@sendgrid/mail';
+import { Lambda, SES, config } from 'aws-sdk';
+import * as aws from 'aws-sdk/clients/ses';
+import { createTransport } from 'nodemailer';
+import Mail = require('nodemailer/lib/mailer');
 
-const lambda = new Lambda({
-  region: 'us-east-1'
-});
+config.update({ region: 'us-east-1' });
+
+const lambda = new Lambda();
+
+const ses = new SES();
 
 const params: Lambda.InvocationRequest = {
   FunctionName: 'cambios-altoque-dev-create',
   InvocationType: 'RequestResponse'
 };
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+const transport = createTransport({ SES: { ses, aws } });
 
 const sendEmail: APIGatewayProxyHandler = async () => {
   const { Payload } = await lambda.invoke(params).promise();
@@ -20,24 +24,18 @@ const sendEmail: APIGatewayProxyHandler = async () => {
 
   const buffer = Buffer.from(body, 'base64');
 
-  const msg: sgMail.MailDataRequired = {
+  const msg: Mail.Options = {
+    from: 'carlosmatos13@gmail.com',
     to: 'lematosdev@gmail.com',
-    from: 'carlosmatos13@gmail.com', // Use the email address or domain you verified above
-    subject: 'Prueba envio de Tasa automatico',
-    text: 'and easy to do anywhere, even with Node.js',
-    html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+    subject: 'Message ✓ ' + Date.now(),
+    text: 'I hope this message gets sent! ✓',
     attachments: [
-      {
-        content: buffer.toString('base64'),
-        filename: 'output.png',
-        type: 'image/png',
-        disposition: 'attachment'
-      }
+      { filename: 'output.png', content: buffer }
     ]
   };
 
   try {
-    await sgMail.send(msg, false);
+    await transport.sendMail(msg);
   } catch (e) {
     console.log(JSON.stringify(e, null, 2));
     return {
