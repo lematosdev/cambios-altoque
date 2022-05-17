@@ -1,0 +1,49 @@
+org: lematosdev
+app: cambios-altoque
+service: cambios-altoque
+
+useDotenv: true
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: personal
+  environment:
+    SENDGRID_API_KEY: ${env:SENDGRID_API_KEY}
+  layers:
+      - arn:aws:lambda:us-east-1:672026565936:layer:canvas-nodejs:4
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 's3:*'
+          Resource:
+            {
+              'Fn::Join':
+                ['', ['arn:aws:s3:::cambios-altoque', '/*']]
+            }
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource:
+            - '*'
+
+functions:
+  create:
+    handler: handler.createImage
+  send:
+    handler: handler.sendEmail
+  fetch:
+    handler: handler.fetchP2P
+
+package:
+  patterns:
+    - '!node_modules/canvas/**'
+    - 'assets/**'
