@@ -35,7 +35,7 @@ const createImage: APIGatewayProxyHandler = async () => {
   if (!s3img)
     return { statusCode: 500, body: 'No image found' };
 
-  const date = new Intl.DateTimeFormat('es-ES', {
+  const date = new Intl.DateTimeFormat('es-CL', {
     day: 'numeric',
     month: 'long'
   })
